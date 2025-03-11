@@ -29,7 +29,7 @@ Currently, OmniQuery supports the following JDBC sources:
 2. Write a SQL query where subqueries reference connection names using the `<connection_name>__<alias>` pattern.
 3. OmniQuery processes each subquery, executes it against the appropriate database, and stores results in SQLite (all columns are stored as strings to prevent type mismatches).
 4. The final query runs against the SQLite database.
-5. Subqueries can reference values from another query using SQL comments like `/* <table_name>.<column_name> */`. These are always assumed to be quoted lists for now.
+5. Subqueries can reference result values from another query using SQL comments like `/* <table_name>.<column_name> */`. These are always assumed to be quoted lists of unique values for now.
 6. Results are exported to a CSV file and retained alongside the SQLite database for further inspection.
 
 ## Connection Settings
@@ -65,7 +65,7 @@ SELECT * FROM (
 ) data2__pets;
 ```
 
-### Joining Data Across Sources Using SQL Notes
+### Joining Data Across Sources While Referencing Results
 
 ```sql
 SELECT * FROM (
@@ -101,6 +101,14 @@ This will generate a `omniquery.jar` file that can be executed with:
 ```sh
 java -jar omniquery.jar <path to .sql>
 ```
+
+## Future Enhancements
+
+1. Better CLI options, like specifying the configuration
+2. Integration with VSCode or DBeaver; I want a quick way to build queries, execute them, and get at the results
+3. Possible keywords for result references, like "/* unquoted data_table.column_name */"
+4. Elasticsearch support via HTTP/SQL, possibly
+5. Options to disable/enable the verbose output or the specify what files to create
 
 ## License
 
