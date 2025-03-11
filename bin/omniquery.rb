@@ -6,7 +6,7 @@ $LOAD_PATH.unshift(File.expand_path('lib'))
 
 require 'jdbc'
 require 'jdbc/mysql'
-require 'jdbc/postgresql'
+require 'jdbc-postgresql'
 require 'jdbc/sqlite3'
 require 'jdbc/mssql'
 require 'jdbc/mariadb'
