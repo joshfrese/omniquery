@@ -1,0 +1,12 @@
+{
+  "source_one": {
+    "connection": "jdbc:mysql://127.0.0.1:123/dbname",
+    "user": "client_name",
+    "password": "password"
+  },
+  "source_two": {
+    "connection": "jdbc:postgresql://127.0.0.1:456/another_database",
+    "user": "username",
+    "password": "password"
+  }
+}
