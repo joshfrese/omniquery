@@ -19,6 +19,8 @@ require 'omni_query'
 require 'omni_query_subquery'
 require 'omni_query_connection_pool'
 
+binding.pry if ARGV[0] == 'debug'
+
 raise 'Connection Settings Not Found' unless File.exist?(DEFAULT_CONNECTION_SETTINGS_FILE)
 raise 'You must specify a SQL file to execute' if ARGV[0].nil?
 raise "Invalid SQL File: #{ARGV[0]}" unless File.exist?(ARGV[0])
