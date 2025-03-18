@@ -6,7 +6,7 @@ class OmniQuery
   def initialize(connection_settings, query_file)
     @query_file = query_file
     @query_string = File.read(query_file)
-    @connection_pool = OmniQueryConnectionPool.new(connection_settings)
+    @connection_pool = OmniQuery::ConnectionPool.new(connection_settings)
     @sqlite_filename = File.basename(query_file).gsub(File.extname(query_file), "_#{datetime_stamp}.sqlite")
   end
 
@@ -15,9 +15,18 @@ class OmniQuery
     Time.now.utc.to_s.gsub(/[\:\-]+/,'').gsub(' UTC','').gsub(' ','_')
   end
 
+  # This seems complicated. Originally it was regular expressions. I couldn't find a way in regexp
+  # to match beginning and ending parenthesis within nested sets and only find their correct counterpart.
+  # My basic examples worked fine with regexp, but more complicated nesting caused problems.
+  #
   # @return [Array<String>]
-  def subquery_strings
-    query_string.scan(/\(.*?\) (?:as )?\w+__\w+/m)
+  def subquery_strings(stack = [])
+    query_string.chars.each_with_object([]).with_index do |(char, results), index|
+      stack << index if char == '('
+      next unless char == ')' && (start = stack.pop)
+      match = query_string[index..].gsub(/[\n\r]+/,'').match(/^\)\s+(as\s+|)\w+__\w+/)
+      results << query_string[start..index] + match.to_s[1..] if match
+    end
   end
 
   # @return [Array<OmniQuery::Subquery>]

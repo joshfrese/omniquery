@@ -1,6 +1,6 @@
 #!jruby
 
-VERSION = '1.0.0'
+VERSION = '1.1.0'
 DEFAULT_CONNECTION_SETTINGS_FILE = 'omniquery_connection_settings.json'
 $LOAD_PATH.unshift(File.expand_path('lib'))
 

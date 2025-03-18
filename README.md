@@ -25,12 +25,17 @@ Currently, OmniQuery supports the following JDBC sources:
 
 ## How It Works
 
-1. Define database connections in `omniquery_connection_settings.json`.
-2. Write a SQL query where subqueries reference connection names using the `<connection_name>__<alias>` pattern.
-3. OmniQuery processes each subquery, executes it against the appropriate database, and stores results in SQLite (all columns are stored as strings to prevent type mismatches).
-4. The final query runs against the SQLite database.
-5. Subqueries can reference result values from another query using SQL comments like `/* <table_name>.<column_name> */`. These are always assumed to be quoted lists of unique values for now.
-6. Results are exported to a CSV file and retained alongside the SQLite database for further inspection.
+* Define database connections in `omniquery_connection_settings.json`.
+* Write a SQL query where subqueries reference connection names using the `<connection_name>__<alias>` pattern.
+* OmniQuery processes each subquery, executes it against the appropriate database, and stores results in SQLite (all columns are stored as strings to prevent type mismatches).
+* The final query runs against the SQLite database.
+* Subqueries can reference result values from another query using SQL comments like `/* [unquoted|nonunique|nullable] <table_name>.<column_name> */`.
+* The default substitution for a result reference is a unique quoted list (e.g. "'foo','bar'")
+  * **unquoted**: Removes the single quotes surrounding the values
+  * **nonunique**: Sends all values, even if they are duplicated
+  * **nullable**: Returns 'null' in the case of no values, versus the default of "''"
+* The table name reference can simply be '*' which means it will attempt to merge the results of all other subqueries
+* By default results are exported to a CSV file and retained in the SQLite database for further inspection.
 
 ## Connection Settings
 
@@ -77,6 +82,30 @@ LEFT JOIN (
 WHERE users.test_account = false;
 ```
 
+### Reference Results From Multiple Sources
+
+```sql
+SELECT * FROM (
+  SELECT * FROM (
+    SELECT 'cars' as record_type, c.created_by_id, count(distinct c.id) as record_count
+    FROM cars c
+    WHERE p.created_at > '2025-03-15'
+    GROUP BY 1,2
+  ) data1__cars
+  union all
+  SELECT * FROM (
+    SELECT 'cats' as record_type, c.created_by_id, count(distinct c.id) as record_count
+    FROM cats c
+    WHERE c.created_at > '2025-03-15'
+    GROUP BY 1,2
+  ) data2__cats
+) r
+left join (
+  SELECT u.id, u.email, u.first_name FROM users u
+  WHERE u.id in (/* *.created_by_id */)
+) data3__users u on u.id = r.created_by_id
+```
+
 ## Installation & Usage
 
 ### Running the Script
@@ -96,19 +125,16 @@ gem install warbler
 warble executable jar
 ```
 
-This will generate a `omniquery.jar` file that can be executed with:
+This will generate a `omniquery.jar` file (or you can download a pre-compiled .jar) that can be executed with:
 
 ```sh
 java -jar omniquery.jar <path to .sql>
 ```
 
-## Future Enhancements
+## Next Enhancements
 
-1. Better CLI options, like specifying the configuration
+1. CLI to specify connection settings, optional output, verbose logging or not, including the final SQL
 2. Integration with VSCode or DBeaver; I want a quick way to build queries, execute them, and get at the results
-3. Possible keywords for result references, like "/* unquoted data_table.column_name */"
-4. Elasticsearch support via HTTP/SQL, possibly
-5. Options to disable/enable the verbose output or the specify what files to create
 
 ## License
 

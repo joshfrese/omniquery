@@ -1,4 +1,4 @@
-class OmniQueryConnectionPool
+class OmniQuery::ConnectionPool
   attr_reader :connection_settings, :connections
 
   def initialize(connection_settings)

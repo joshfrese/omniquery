@@ -20,12 +20,7 @@ class OmniQuery::Subquery
   #
   # @return [Array<String>]
   def result_references
-    original_sql.scan(/\/\* (\w+\.\w+) \*\//).flatten
-  end
-
-  # @return [Hash,Nil]
-  def result_references_hash
-    result_references.map { |ref| ref.split('.') }.to_h
+    original_sql.scan(/\/\* ([\w\s]*?)(\w+|\*)\.(\w+) \*\//)
   end
 
   # @return [Sequel::JDBC::Database]
@@ -43,12 +38,41 @@ class OmniQuery::Subquery
   #
   # @return [String]
   def sql
-    return original_sql unless result_references
+    return original_sql unless result_references.any?
 
-    result_references_hash.each_with_object(original_sql) do |(table, column), final_sql|
-      value_array = omni_query.subquery_find(table).results.map { |result| result[column.to_sym] }.uniq
-      final_sql.gsub!("/* #{table}.#{column} */", "'#{value_array.join("','")}'")
+    result_references.dup.each_with_object(original_sql.dup) do |(options, table, column), final_sql|
+      final_sql.gsub!("/* #{options}#{table}.#{column} */", result_values(options, table, column))
     end
+  end
+
+  # @param options [String]
+  # @param table [String]
+  # @param column [String]
+  # @return [String]
+  def result_values(options, table, column)
+    values = results_for(table, column)
+    return 'null' if values.empty? && options.include?('nullable')
+
+    values.uniq! unless options.include?('nonunique')
+    options.include?('unquoted') ? values.join(',') : "'#{values.join("','")}'"
+  end
+
+  # @param table [String]
+  # @param column [String]
+  def results_for(table, column)
+    return all_results(column) if table == '*'
+
+    omni_query.subquery_find(table).results.map { |result| result[column.to_sym] }
+  end
+
+  # @param column [String]
+  def all_results(column)
+    omni_query.subqueries.flat_map do |subquery|
+      next if subquery == self
+      next unless subquery.results.first.key? column.to_sym
+
+      subquery.results.map { |result| result[column.to_sym] }
+    end.compact
   end
 
   # @return [Array<Hash>]
