@@ -24,6 +24,7 @@ GEM
     rubyzip (1.3.0)
     sequel (5.90.0)
       bigdecimal
+    slop (4.10.1)
     spoon (0.0.6)
       ffi
     warbler (2.0.5)
@@ -46,6 +47,7 @@ DEPENDENCIES
   json
   pry
   sequel
+  slop
   warbler
 
 BUNDLED WITH

@@ -2,6 +2,12 @@
 
 Format for this file derived from [http://keepachangelog.com](http://keepachangelog.com).
 
+## 1.2.0 / 2023-03-19
+
+### Improvements
+
+* Added a bunch of CLI options
+
 ## 1.1.0 / 2023-03-17
 
 ### Improvements

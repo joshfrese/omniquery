@@ -1,13 +1,14 @@
 class OmniQuery
-  attr_reader :query_file, :query_string, :connection_pool, :sqlite_filename
+  attr_reader :opts, :query_string, :connection_pool, :sqlite_filename
 
   # @param connection_settings [Hash]
-  # @param query_file [String]
-  def initialize(connection_settings, query_file)
-    @query_file = query_file
-    @query_string = File.read(query_file)
+  # @param opts [Slop::Result]
+  def initialize(connection_settings, opts)
+    @opts = opts
+    @query_string = File.read(opts[:sql_file])
     @connection_pool = OmniQuery::ConnectionPool.new(connection_settings)
-    @sqlite_filename = File.basename(query_file).gsub(File.extname(query_file), "_#{datetime_stamp}.sqlite")
+    @sqlite_filename = opts[:sqlite] || File.basename(opts[:sql_file]).gsub(File.extname(opts[:sql_file]), "_#{datetime_stamp}.sqlite")
+    File.delete(sqlite_filename) if File.exist? sqlite_filename
   end
 
   # @return [String]
@@ -65,21 +66,17 @@ class OmniQuery
     end
   end
 
-  # @return [String]
-  def csv_filename
-    sqlite_filename.gsub('.sqlite','.csv')
-  end
-
   # @return [Array<Hash>]
   def results
     @results ||= sqlite[sql].to_a
   end
 
   def build_csv!
-    CSV.open(csv_filename, 'w') do |csv_output|
+    filename = opts[:csv] || sqlite_filename.gsub('.sqlite','.csv')
+    CSV.open(filename, 'w') do |csv_output|
       csv_output << results.first.keys
       results.each { |result| csv_output << result.values }
     end
-    puts "Created #{csv_filename} with #{results.count} results after running sqlite query"
+    puts "Created #{filename} with #{results.count} results"
   end
 end

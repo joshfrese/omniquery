@@ -106,6 +106,20 @@ left join (
 ) data3__users u on u.id = r.created_by_id
 ```
 
+## Command Line Options
+```text
+-s, --connection_settings = path to the connection settings json file; omniquery_connection_settings.json will be used if not specified
+-f, --sql_file = path to the sql file to execute. required.
+-c, --csv = path to the csv file to create; will auto create if not specified
+-l, --sqlite = path to the sqlite file to create; will auto create if not specified
+-o, --final_sql = path to create the resulting sqlite query
+-db, --dbeaver = path to dbeaver if using to open resulting sqlite file
+-dbf, --dbeaver_folder = optional connections folder to add the new connection to
+--nocsv = Option to prevent making a csv altogether
+--pry = open pry to debug manually
+--version = print the version
+```
+
 ## Installation & Usage
 
 ### Running the Script
