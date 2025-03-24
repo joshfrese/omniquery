@@ -52,7 +52,7 @@ query.build_csv! unless opts[:nocsv]
 
 exit unless opts[:dbeaver]
 
-db_commands = [opts[:dbeaver], '-con', "driver=sqlite|database=#{query.sqlite_filename}|name=#{File.basename(query.sqlite_filename)}|openConsole=true"]
+db_commands = [opts[:dbeaver], '-con', "driver=sqlite|database=#{File.expand_path(query.sqlite_filename)}|name=#{File.basename(query.sqlite_filename)}|openConsole=true"]
 db_commands[2] += "|folder=#{opts[:dbeaver_folder]}" if opts[:dbeaver_folder]
 db_commands += ['-f', opts[:final_sql]] if opts[:final_sql]
 
